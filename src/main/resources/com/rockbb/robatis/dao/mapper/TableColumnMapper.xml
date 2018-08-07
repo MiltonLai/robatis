@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/builder/xml/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.rockbb.robatis.dao.mapper.TableColumnMapper">
+	<resultMap type="com.rockbb.robatis.dao.dto.TableColumnDTO" id="dto_1">
+		<id column="field" property="field" />
+		<result column="type" property="type" />
+		<result column="key" property="key" />
+		<result column="extra" property="extra" />
+	</resultMap>
+
+	<select id="getMySQLTables" resultType="java.lang.String">
+		SHOW TABLES
+	</select>
+
+	<select id="getOracleTables" resultType="java.lang.String">
+		SELECT A.TABLE_NAME
+		FROM user_tables A
+		ORDER BY TABLE_NAME ASC
+	</select>
+
+	<select id="getMySQLSchema" parameterType="java.util.Map" resultMap="dto_1">    
+		DESCRIBE ${tableName}
+	</select>
+
+	<select id="getOracleSchema" parameterType="java.util.Map" resultMap="dto_1">    
+		SELECT
+			A.COLUMN_NAME as field,
+			CASE WHEN A.DATA_TYPE = 'NUMBER' THEN
+				A.DATA_TYPE||'('||A.DATA_PRECISION||','||A.DATA_SCALE||')'
+			WHEN A.DATA_TYPE = 'VARCHAR2' THEN
+				A.DATA_TYPE||'('||A.DATA_LENGTH||')'
+			WHEN A.DATA_SCALE IS NULL THEN
+				A.DATA_TYPE||'('||A.DATA_LENGTH||')'
+			ELSE
+				A.DATA_TYPE||'('||A.DATA_LENGTH||','||A.DATA_SCALE||')' END AS TYPE,
+			B.CONSTRAINT_TYPE as key, A.nullable as extra
+		FROM USER_TAB_COLUMNS A LEFT JOIN
+			(SELECT E.*, F.CONSTRAINT_TYPE FROM USER_CONS_COLUMNS E 
+				LEFT JOIN USER_CONSTRAINTS F ON E.CONSTRAINT_NAME = F.CONSTRAINT_NAME 
+				WHERE E.TABLE_NAME = #{tableName} AND (F.CONSTRAINT_TYPE = 'P' OR F.CONSTRAINT_TYPE = 'U')) B
+			ON A.column_name = B.column_name
+		WHERE A.TABLE_NAME = #{tableName}
+		ORDER BY A.COLUMN_ID
+	</select>
+
+</mapper>
