@@ -13,7 +13,7 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <org.springframework.version>4.1.6.RELEASE</org.springframework.version>
+        <org.springframework.version>4.3.21.RELEASE</org.springframework.version>
 	</properties>
 
 	<dependencies>
@@ -37,9 +37,9 @@
                 Define this if you use Spring Transactions or DAO Exception Hierarchy (org.springframework.transaction.*
                 /org.springframework.dao.*) -->
         <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-tx</artifactId>
-            <version>${org.springframework.version}</version>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-tx</artifactId>
+			<version>${org.springframework.version}</version>
         </dependency>
         <!-- JDBC Data Access Library (depends on spring-core, spring-beans, spring-context,
                 spring-tx) Define this if you use Spring's JdbcTemplate API (org.springframework.jdbc.*) -->
