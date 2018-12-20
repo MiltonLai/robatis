@@ -30,6 +30,8 @@ public class MapperUtil {
         if (entityName == null || entityName.length() == 0) {
             entityName = DTOUtil.getEntityName(tableName);
         }
+        String dtoName = DTOUtil.getDTOName(entityName);
+
         if (variables == null || variables.size() == 0) {
             variables = new ArrayList<>();
             for (TableColumnDTO column : columns) {
@@ -43,6 +45,7 @@ public class MapperUtil {
         root.put("className", entityName + AppConfig.MAPPER_SUFFIX);
         root.put("beanName", DTOUtil.getBeanName(entityName) + AppConfig.MAPPER_SUFFIX);
         root.put("entityName", entityName);
+        root.put("dtoName", dtoName);
         root.put("primaryKeys", primaryKeys);
 
         Set<String> imports = new TreeSet<>();

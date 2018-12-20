@@ -7,17 +7,17 @@ package ${package};
 public interface ${className} {
     String[] ORDERBY = {<#if orderbys??><#list orderbys as orderby>"${orderby}"<#if orderby_has_next>, </#if></#list></#if>};
 
-    int insert(${entityName} dto);
+    int insert(${dtoName} dto);
 
     int delete(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar}<#if primaryVar_has_next>, </#if></#list></#if>);
 
-    int update(${entityName} dto);
+    int update(${dtoName} dto);
 
     int alter(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar}, </#list></#if>@Param("param") Map<String, Object> args);
 
-    AccessLogsDTO select(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar}<#if primaryVar_has_next>, </#if></#list></#if>);
+    ${dtoName} select(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar}<#if primaryVar_has_next>, </#if></#list></#if>);
 
-    List<${entityName}> list(
+    List<${dtoName}> list(
         @Param("pager") Pager pager,
         @Param("param") Map<String, Object> args);
 

@@ -39,4 +39,5 @@ public class AppConfig {
     public static final String LE = getValue("file.line.delimiter").equals("0")? "\n" : "\r\n";
     public static final String DT = "    ";
     public static final String FILE_OUT_FOLDER = getValue("file.out.folder");
+    public static final int SPRING_CLOUD_ANNOTATION = getIntValue("spring.cloud.annotation");
 }

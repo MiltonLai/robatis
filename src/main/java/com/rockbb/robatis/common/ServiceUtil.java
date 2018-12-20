@@ -32,6 +32,8 @@ public class ServiceUtil {
         if (entityName == null || entityName.length() == 0) {
             entityName = DTOUtil.getEntityName(tableName);
         }
+        String dtoName = DTOUtil.getDTOName(entityName);
+
         if (variables == null || variables.size() == 0) {
             variables = new ArrayList<String>();
             for (TableColumnDTO column : columns) {
@@ -50,22 +52,39 @@ public class ServiceUtil {
             if (key[2].contains("java"))
                 imports.add(key[2]);
         }
+        if (AppConfig.SPRING_CLOUD_ANNOTATION == 1) {
+            imports.add("org.springframework.cloud.openfeign.FeignClient");
+            imports.add("org.springframework.web.bind.annotation.RequestMapping");
+            imports.add("org.springframework.web.bind.annotation.RequestMethod");
+            imports.add("org.springframework.web.bind.annotation.RequestParam");
+        }
         root.put("imports", imports);
 
         root.put("package", AppConfig.SERVICE_PACKAGE);
         root.put("entityName", entityName);
+        root.put("dtoName", dtoName);
         root.put("serviceName", getServiceName(entityName));
+        root.put("beanName", DTOUtil.getBeanName(getServiceName(entityName)));
 
         List<String> primaryVars = new ArrayList<>();
         if (primaryKeys.size() == 0) {
-            primaryVars.add("Serializable id");
+            String var = "Serializable id";
+            if (AppConfig.SPRING_CLOUD_ANNOTATION == 1) {
+                var = "@RequestParam(value = \"id\") " + var;
+            }
+            primaryVars.add(var);
         } else {
             for (int i = 0; i < primaryKeys.size(); i++) {
                 String[] key = primaryKeys.get(i);
-                primaryVars.add(key[2]+" "+key[1]);
+                String var = key[2]+" "+key[1];
+                if (AppConfig.SPRING_CLOUD_ANNOTATION == 1) {
+                    var = "@RequestParam(value = \""+key[1]+"\") " + var;
+                }
+                primaryVars.add(var);
             }
         }
         root.put("primaryVars", primaryVars);
+        root.put("springCloud", AppConfig.SPRING_CLOUD_ANNOTATION);
 
         return root;
     }
@@ -83,6 +102,7 @@ public class ServiceUtil {
         if (entityName == null || entityName.length() == 0) {
             entityName = DTOUtil.getEntityName(tableName);
         }
+        String dtoName = DTOUtil.getDTOName(entityName);
         if (variables == null || variables.size() == 0) {
             variables = new ArrayList<String>();
             for (TableColumnDTO column : columns) {
@@ -92,6 +112,7 @@ public class ServiceUtil {
         Map<String, Object> root = new HashMap<>();
         root.put("package", AppConfig.SERVICE_IMPL_PACKAGE);
         root.put("entityName", entityName);
+        root.put("dtoName", dtoName);
         root.put("beanName", DTOUtil.getBeanName(getServiceName(entityName)));
         root.put("className", getServiceImplName(entityName));
         root.put("serviceName", getServiceName(entityName));
@@ -110,6 +131,13 @@ public class ServiceUtil {
         imports.add("com.rockbb.commons.lib.web.Pager");
         imports.add("org.springframework.stereotype.Repository");
         imports.add("javax.annotation.Resource");
+        if (AppConfig.SPRING_CLOUD_ANNOTATION == 1) {
+            imports.add("org.springframework.beans.factory.annotation.Value");
+            imports.add("org.springframework.web.bind.annotation.RequestMapping");
+            imports.add("org.springframework.web.bind.annotation.RequestMethod");
+            imports.add("org.springframework.web.bind.annotation.RequestParam");
+            imports.add("org.springframework.web.bind.annotation.RestController");
+        }
 
         imports.add(DTOUtil.getClassPackage() + "." + DTOUtil.getDTOName(entityName));
         imports.add(MapperUtil.getClassPackage() + "." + MapperUtil.getMapperName(entityName));
@@ -130,6 +158,7 @@ public class ServiceUtil {
             }
         }
         root.put("primaryVars", primaryVars);
+        root.put("springCloud", AppConfig.SPRING_CLOUD_ANNOTATION);
         return root;
     }
 
