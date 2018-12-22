@@ -30,17 +30,17 @@
     <update id="alter">
         UPDATE <include refid="table" />
         <set>
-<#list alters as alter>            ${alter}<#if alter_has_next>,${'\n'}</#if></#list>
+<#list alters as alter>            ${alter}<#if alter_has_next>${'\n'}</#if></#list>
         </set>
         WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if><#if hasVersion> AND version = ${'#'}{"${versionField}"}</#if>
     </update>
 
-    <delete id="delete" parameterType="long">
+    <delete id="delete"<#if primaryKeys??><#if primaryKeys?size == 1> parameterType="${primaryKeys[0][2]}"</#if></#if>>
         DELETE FROM <include refid="table" />
         WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>
     </delete>
 
-    <select id="select" parameterType="long" resultMap="${resultMapId}">
+    <select id="select"<#if primaryKeys??><#if primaryKeys?size == 1> parameterType="${primaryKeys[0][2]}"</#if></#if> resultMap="${resultMapId}">
         SELECT <include refid="key" />, <include refid="columns" />
         FROM <include refid="table" />
         WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>

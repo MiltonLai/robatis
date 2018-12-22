@@ -43,7 +43,7 @@ public class ${className} implements ${serviceName} {
     </#if>public int alter(<#if primaryVars??><#list primaryVars as primaryVar><#if springCloud == 1>@RequestParam </#if>${primaryVar[0]} ${primaryVar[1]}<#if primaryVar_has_next>, </#if></#list></#if>) {
         ArgGen args = new ArgGen();
         // Add more parameters here
-        return ${mapperBeanName}.alter(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar[1]}, </#list></#if>, args.getArgs());
+        return ${mapperBeanName}.alter(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar[1]}, </#list></#if>args.getArgs());
     }
 
     @Override

@@ -209,6 +209,7 @@ public class MapperUtil {
                 } else {
                     sb.append(getOracleValueAssigner("param." + variables.get(i), columns.get(i)));
                 }
+                sb.append(",</if>");
             }
             alters.add(sb.toString());
         }
