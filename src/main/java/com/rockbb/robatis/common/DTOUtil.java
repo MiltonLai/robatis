@@ -65,7 +65,7 @@ public class DTOUtil {
         else if (varType.equals("BigDecimal")) value = "BigDecimal.valueOf(0, 3)";
         else if (varType.equals("char")) value = "' '";
         else value = "null";
-        sb.append(varName).append(CommonUtil.genIndentSpace(varName, 30)).append("= ").append(value).append(";");
+        sb.append(varName).append(CommonUtil.genIndentSpace(varName, 30)).append("= ").append(value);
         return sb.toString();
     }
 
