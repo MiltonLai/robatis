@@ -21,26 +21,26 @@ public class ${className} implements ${serviceName} {
     private ${mapperClassName} ${mapperBeanName};
 
     @Override
-    <#if springCloud == 1>@RequestMapping(value = "/add", method = RequestMethod.GET)
-    </#if>public int add(<#if springCloud == 1>@RequestParam </#if>${dtoName} dto) {
+    <#if springCloud == 1>@RequestMapping(value = "/add", method = RequestMethod.POST)
+    </#if>public int add(<#if springCloud == 1>@RequestBody </#if>${dtoName} dto) {
         return ${mapperBeanName}.insert(dto);
     }
 
     @Override
     <#if springCloud == 1>@RequestMapping(value = "/delete", method = RequestMethod.GET)
-    </#if>public int delete(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar[0]} ${primaryVar[1]}<#if primaryVar_has_next>, </#if></#list></#if>) {
+    </#if>public int delete(<#if primaryVars??><#list primaryVars as primaryVar><#if springCloud == 1>@RequestParam(value="${primaryVar[1]}") </#if>${primaryVar[0]} ${primaryVar[1]}<#if primaryVar_has_next>, </#if></#list></#if>) {
         return ${mapperBeanName}.delete(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar[1]}<#if primaryVar_has_next>, </#if></#list></#if>);
     }
 
     @Override
-    <#if springCloud == 1>@RequestMapping(value = "/update", method = RequestMethod.GET)
-    </#if>public int update(<#if springCloud == 1>@RequestParam </#if>${dtoName} dto) {
+    <#if springCloud == 1>@RequestMapping(value = "/update", method = RequestMethod.POST)
+    </#if>public int update(<#if springCloud == 1>@RequestBody </#if>${dtoName} dto) {
         return ${mapperBeanName}.update(dto);
     }
 
     @Override
     <#if springCloud == 1>@RequestMapping(value = "/alter", method = RequestMethod.GET)
-    </#if>public int alter(<#if primaryVars??><#list primaryVars as primaryVar><#if springCloud == 1>@RequestParam </#if>${primaryVar[0]} ${primaryVar[1]}<#if primaryVar_has_next>, </#if></#list></#if>) {
+    </#if>public int alter(<#if primaryVars??><#list primaryVars as primaryVar><#if springCloud == 1>@RequestParam(value="${primaryVar[1]}") </#if>${primaryVar[0]} ${primaryVar[1]}<#if primaryVar_has_next>, </#if></#list></#if>) {
         ArgGen args = new ArgGen();
         // Add more parameters here
         return ${mapperBeanName}.alter(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar[1]}, </#list></#if>args.getArgs());
@@ -48,13 +48,13 @@ public class ${className} implements ${serviceName} {
 
     @Override
     <#if springCloud == 1>@RequestMapping(value = "/get", method = RequestMethod.GET)
-    </#if>public ${dtoName} get(<#if primaryVars??><#list primaryVars as primaryVar><#if springCloud == 1>@RequestParam </#if>${primaryVar[0]} ${primaryVar[1]}<#if primaryVar_has_next>, </#if></#list></#if>) {
+    </#if>public ${dtoName} get(<#if primaryVars??><#list primaryVars as primaryVar><#if springCloud == 1>@RequestParam(value="${primaryVar[1]}") </#if>${primaryVar[0]} ${primaryVar[1]}<#if primaryVar_has_next>, </#if></#list></#if>) {
         return ${mapperBeanName}.select(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar[1]}<#if primaryVar_has_next>, </#if></#list></#if>);
     }
 
     @Override
-    <#if springCloud == 1>@RequestMapping(value = "/list", method = RequestMethod.GET)
-    </#if>public List<${dtoName}> list(<#if springCloud == 1>@RequestParam </#if>Pager pager) {
+    <#if springCloud == 1>@RequestMapping(value = "/list", method = RequestMethod.POST)
+    </#if>public List<${dtoName}> list(<#if springCloud == 1>@RequestBody </#if>Pager pager) {
         pager.setSorts(${mapperClassName}.ORDERBY);
         ArgGen args = new ArgGen();
         // Add more parameters here
@@ -63,8 +63,8 @@ public class ${className} implements ${serviceName} {
 
 <#if primaryKeys??><#if primaryKeys?size == 1><#assign primaryKey = primaryKeys[0]>
     @Override
-    <#if springCloud == 1>@RequestMapping(value = "/listIds", method = RequestMethod.GET)
-    </#if>public List<${primaryKey[4]}> listIds(<#if springCloud == 1>@RequestParam </#if>Pager pager) {
+    <#if springCloud == 1>@RequestMapping(value = "/listIds", method = RequestMethod.POST)
+    </#if>public List<${primaryKey[4]}> listIds(<#if springCloud == 1>@RequestBody </#if>Pager pager) {
         pager.setSorts(${mapperClassName}.ORDERBY);
         ArgGen args = new ArgGen();
         // Add more parameters here
