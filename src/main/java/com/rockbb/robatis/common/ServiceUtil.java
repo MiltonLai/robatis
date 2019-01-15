@@ -54,6 +54,7 @@ public class ServiceUtil {
         }
         if (AppConfig.SPRING_CLOUD_ANNOTATION == 1) {
             imports.add("org.springframework.cloud.openfeign.FeignClient");
+            imports.add("org.springframework.web.bind.annotation.RequestBody");
             imports.add("org.springframework.web.bind.annotation.RequestMapping");
             imports.add("org.springframework.web.bind.annotation.RequestMethod");
             imports.add("org.springframework.web.bind.annotation.RequestParam");
@@ -133,6 +134,7 @@ public class ServiceUtil {
         imports.add("javax.annotation.Resource");
         if (AppConfig.SPRING_CLOUD_ANNOTATION == 1) {
             imports.add("org.springframework.beans.factory.annotation.Value");
+            imports.add("org.springframework.web.bind.annotation.RequestBody");
             imports.add("org.springframework.web.bind.annotation.RequestMapping");
             imports.add("org.springframework.web.bind.annotation.RequestMethod");
             imports.add("org.springframework.web.bind.annotation.RequestParam");
