@@ -22,26 +22,14 @@ public class ServiceUtil {
     /**
      * 生成 service interface 代码
      *
-     * @param tableName 数据表名
      * @param entityName 不带前后缀的纯entity bean名称, 如用tableName生成可输入null或空字符串
      * @param columns 数据表字段
-     * @param variables entity bean的成员变量列表, 与数据表字段数量和顺序要一致, 使用column所生成可以输入null
      */
-    public static Map<String, Object> genServiceInterface(
-            String tableName, String entityName, List<TableColumnDTO> columns, List<String> variables) {
-        if (entityName == null || entityName.length() == 0) {
-            entityName = DTOUtil.getEntityName(tableName);
-        }
-        String dtoName = DTOUtil.getDTOName(entityName);
+    public static Map<String, Object> genServiceInterface(String entityName, List<TableColumnDTO> columns) {
 
-        if (variables == null || variables.size() == 0) {
-            variables = new ArrayList<String>();
-            for (TableColumnDTO column : columns) {
-                variables.add(column.getVariableName());
-            }
-        }
+        String dtoName = DTOUtil.getDTOName(entityName);
         Map<String, Object> root = new HashMap<>();
-        List<String[]> primaryKeys = MapperUtil.getPrimaryKeys(columns, variables, false);
+        List<String[]> primaryKeys = MapperUtil.getPrimaryKeys(columns, false);
         root.put("primaryKeys", primaryKeys);
 
         Set<String> imports = new TreeSet<>();
@@ -93,23 +81,11 @@ public class ServiceUtil {
     /**
      * 生成 service implementation 代码
      *
-     * @param tableName 数据表名
      * @param entityName 不带前后缀的纯entity bean名称, 如用tableName生成可输入null或空字符串
      * @param columns 数据表字段
-     * @param variables entity bean的成员变量列表, 与数据表字段数量和顺序要一致, 使用column所生成可以输入null
      */
-    public static Map<String, Object> genServiceImplementation(
-            String tableName, String entityName, List<TableColumnDTO> columns, List<String> variables) {
-        if (entityName == null || entityName.length() == 0) {
-            entityName = DTOUtil.getEntityName(tableName);
-        }
+    public static Map<String, Object> genServiceImplementation(String entityName, List<TableColumnDTO> columns) {
         String dtoName = DTOUtil.getDTOName(entityName);
-        if (variables == null || variables.size() == 0) {
-            variables = new ArrayList<String>();
-            for (TableColumnDTO column : columns) {
-                variables.add(column.getVariableName());
-            }
-        }
         Map<String, Object> root = new HashMap<>();
         root.put("package", AppConfig.SERVICE_IMPL_PACKAGE);
         root.put("entityName", entityName);
@@ -121,7 +97,7 @@ public class ServiceUtil {
         root.put("mapperBeanName", getBeanMapper(entityName));
         root.put("mapperClassName", MapperUtil.getMapperName(entityName));
 
-        List<String[]> primaryKeys = MapperUtil.getPrimaryKeys(columns, variables, false);
+        List<String[]> primaryKeys = MapperUtil.getPrimaryKeys(columns, false);
         root.put("primaryKeys", primaryKeys);
 
         Set<String> imports = new TreeSet<>();

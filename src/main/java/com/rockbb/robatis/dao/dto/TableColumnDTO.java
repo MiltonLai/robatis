@@ -7,34 +7,24 @@ public class TableColumnDTO {
 	private String type = "";
 	private String key = "";
 	private String extra = "";
+	private String javaType = null;
+	private String javaName = null;
 
 	public String toString() {
 		return field + " " + type + " " + key + " " + extra;
 	}
-	public String getField() {
-		return field;
-	}
-	public void setField(String field) {
-		this.field = field;
-	}
-	public String getType() {
-		return type;
-	}
-	public void setType(String type) {
-		this.type = type;
-	}
-	public String getKey() {
-		return key;
-	}
-	public void setKey(String key) {
-		this.key = key;
-	}
-	public String getExtra() {
-		return extra;
-	}
-	public void setExtra(String extra) {
-		this.extra = extra;
-	}
+	public String getField() { return field; }
+	public void setField(String field) { this.field = field; }
+	public String getType() { return type; }
+	public void setType(String type) { this.type = type; }
+	public String getKey() { return key; }
+	public void setKey(String key) { this.key = key; }
+	public String getExtra() { return extra; }
+	public void setExtra(String extra) { this.extra = extra; }
+	public String getJavaType() { return javaType; }
+	public void setJavaType(String javaType) { this.javaType = javaType; }
+	public String getJavaName() { return javaName; }
+	public void setJavaName(String javaName) { this.javaName = javaName; }
 
 	// Utilities
 	public boolean isPrimary() {
@@ -52,9 +42,5 @@ public class TableColumnDTO {
 		else if (type.indexOf("CLOB") == 0) return "VARCHAR";
 		else if (type.indexOf("NCLOB") == 0) return "NVARCHAR";
 		else return type;
-	}
-
-	public String getVariableName() {
-		return CommonUtil.camelCaseName(field.trim().toLowerCase(), false);
 	}
 }

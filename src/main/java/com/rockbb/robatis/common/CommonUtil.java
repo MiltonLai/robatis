@@ -1,5 +1,10 @@
 package com.rockbb.robatis.common;
 
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -93,6 +98,7 @@ public class CommonUtil {
     public static String camelCaseName(String underscoreName, boolean capitalFirst) {
         StringBuilder result = new StringBuilder();
         if (underscoreName != null && underscoreName.length() > 0) {
+            underscoreName = underscoreName.toLowerCase();
             boolean flag = false;
             for (int i = 0; i < underscoreName.length(); i++) {
                 char ch = underscoreName.charAt(i);
@@ -109,6 +115,21 @@ public class CommonUtil {
             }
         }
         return result.toString();
+    }
+
+    public static List<String> readFileToLines(String file) {
+        List<String> lines = new ArrayList<>();
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader(file));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                lines.add(line);
+            }
+            reader.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return lines;
     }
 
     public static void main(String[] args) {

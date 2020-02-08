@@ -24,31 +24,36 @@ public class Main {
                 tableColumnMapper.getMySQLTables() : tableColumnMapper.getOracleTables();
 
         for (String tableName : tableNames) {
-            String entityName = DTOUtil.getEntityName(tableName);
-            String dtoName = DTOUtil.getDTOName(entityName);
-
-            System.out.println(dtoName + "(" + tableName + ")");
-
             Map<String, Object> params = new HashMap<String, Object>();
             params.put("tableName", tableName);
             List<TableColumnDTO> columns = (AppConfig.DB_TYPE == 0)?
                     tableColumnMapper.getMySQLSchema(params) : tableColumnMapper.getOracleSchema(params);
-            Map<String, Object> data = DTOUtil.genDTOClass(dtoName, columns, true);
-            String destPath = DTOUtil.getClassFilePath();
+            String entityName = DTOUtil.secondParse(columns, tableName);
+            String destPath = DTOUtil.getFieldMappingPath();
+            Map<String, Object> data = new HashMap<>();
+            data.put("name", entityName);
+            data.put("columns", columns);
+            helper.write(destPath, tableName + ".txt", "field_map.ftl", data);
+
+            String dtoName = DTOUtil.getDTOName(entityName);
+            System.out.println(dtoName + "(" + tableName + ")");
+
+            data = DTOUtil.genDTOClass(dtoName, columns, true);
+            destPath = DTOUtil.getClassFilePath();
             helper.write(destPath, dtoName + ".java", "dto.ftl", data);
 
-            data = MapperUtil.genMapperInterface(tableName, null, columns, null);
+            data = MapperUtil.genMapperInterface(entityName, columns);
             destPath = MapperUtil.getClassFilePath();
             helper.write(destPath, entityName + AppConfig.MAPPER_SUFFIX + ".java", "mapper.ftl", data);
 
-            data = MapperUtil.genMapperXML(tableName, null, columns, null);
+            data = MapperUtil.genMapperXML(tableName, entityName, columns);
             helper.write(destPath, entityName + AppConfig.MAPPER_SUFFIX + ".xml", "mapper_xml.ftl", data);
 
-            data = ServiceUtil.genServiceInterface(tableName, null, columns, null);
+            data = ServiceUtil.genServiceInterface(entityName, columns);
             destPath = ServiceUtil.getInterfaceFilePath();
             helper.write(destPath, entityName + AppConfig.DTO_SUFFIX + AppConfig.SERVICE_SUFFIX + ".java", "service.ftl", data);
 
-            data = ServiceUtil.genServiceImplementation(tableName, null, columns, null);
+            data = ServiceUtil.genServiceImplementation(entityName, columns);
             destPath = ServiceUtil.getImplFilePath();
             helper.write(destPath, entityName + AppConfig.DTO_SUFFIX + AppConfig.SERVICE_IMPL_SUFFIX + ".java", "service_impl.ftl", data);
         }

@@ -21,10 +21,12 @@ public interface ${className} {
         @Param("pager") Pager pager,
         @Param("param") Map<String, Object> args);
 <#if primaryKeys??><#if primaryKeys?size == 1><#assign primaryKey = primaryKeys[0]>
+
     List<${primaryKey[4]}> listIds(
         @Param("pager") Pager pager,
         @Param("param") Map<String, Object> args);
 </#if></#if>
+
     long count(@Param("param") Map<String, Object> args);
 
 }

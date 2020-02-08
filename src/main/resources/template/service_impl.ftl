@@ -8,8 +8,8 @@ package ${package};
 @RestController
 </#if>@Repository("${beanName}")
 public class ${className} implements ${serviceName} {
-
-    <#if springCloud == 1>${r'@Value("${spring.cloud.client.hostname}")
+<#if springCloud == 1>
+    ${r'@Value("${spring.cloud.client.hostname}")
     String ipAddress;
     @Value("${server.port}")
     String port;
@@ -17,6 +17,7 @@ public class ${className} implements ${serviceName} {
     String applicationName;'}
 
 </#if>
+
     @Resource(name="${mapperBeanName}")
     private ${mapperClassName} ${mapperBeanName};
 

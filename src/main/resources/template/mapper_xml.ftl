@@ -13,9 +13,9 @@
     </sql>
     <sql id="table">${tableName}</sql>
 
-	<insert id="insert" parameterType="${className}"<#if autoIncrement> useGeneratedKeys="true" keyProperty="${primaryKeys[0][1]}"</#if>>
+    <insert id="insert" parameterType="${className}"<#if autoIncrement> useGeneratedKeys="true" keyProperty="${primaryKeys[0][1]}"</#if>>
         INSERT INTO <include refid="table" />
-        (<include refid="columns" />)
+        (<include refid="key" />, <include refid="columns" />)
         VALUES (
 <#list inserts as insert>        ${insert}<#if insert_has_next>,
 </#if></#list>)
@@ -50,6 +50,7 @@
 
     </sql>
 
+<#if dbType == 0>
     <select id="list" resultMap="${resultMapId}">
         SELECT
             <include refid="key" />, <include refid="columns" />
@@ -64,7 +65,27 @@
             ${'#'}{pager.offset}, ${'#'}{pager.limit}
     </select>
 
-<#if primaryKeys??><#if primaryKeys?size == 1><#assign primaryKey = primaryKeys[0]>
+<#else>
+    <select id="list" resultMap="${resultMapId}">
+        SELECT <include refid="key" />, <include refid="columns" /> FROM
+        (
+            SELECT A.*, ROWNUM AS RN FROM
+            (
+                SELECT B.*
+                FROM <include refid="table" /> B
+                <where>
+                  <include refid="params" />
+                </where>
+                ORDER BY
+                B.${'$'}{pager.sort} ${'$'}{pager.order}
+            ) A
+            WHERE ROWNUM &lt; ${'#'}{pager.limit}
+        )
+        WHERE RN &gt;= ${'#'}{pager.offset}
+    </select>
+
+</#if>
+<#if primaryKeys??><#if primaryKeys?size == 1><#assign primaryKey = primaryKeys[0]><#if dbType == 0>
     <select id="listIds" resultType="${primaryKey[4]}">
         SELECT
             <include refid="key" />
@@ -79,7 +100,26 @@
             ${'#'}{pager.offset}, ${'#'}{pager.limit}
     </select>
 
-</#if></#if>
+<#else>
+    <select id="listIds" resultType="${primaryKey[4]}">
+        SELECT <include refid="key" /> FROM
+        (
+            SELECT A.*, ROWNUM AS RN FROM
+            (
+                SELECT B.<include refid="key" />
+                FROM <include refid="table" /> B
+                <where>
+                  <include refid="params" />
+                </where>
+                ORDER BY
+                B.${'$'}{pager.sort} ${'$'}{pager.order}
+            ) A
+            WHERE ROWNUM &lt; ${'#'}{pager.limit}
+        )
+        WHERE RN &gt;= ${'#'}{pager.offset}
+    </select>
+
+</#if></#if></#if>
     <select id="count" resultType="long">
         SELECT
             COUNT(<include refid="key" />)

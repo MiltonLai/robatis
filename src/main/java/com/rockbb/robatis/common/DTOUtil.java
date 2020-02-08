@@ -2,6 +2,7 @@ package com.rockbb.robatis.common;
 
 import com.rockbb.robatis.dao.dto.TableColumnDTO;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -16,7 +17,7 @@ import java.util.regex.Pattern;
  */
 public class DTOUtil {
 
-    public static String getEntityName(String tableName) {
+    private static String getEntityName(String tableName) {
         // Try to remove the table-prefix
         for (String prefix : AppConfig.DB_PREFIX) {
             if (tableName.indexOf(prefix) == 0) {
@@ -81,6 +82,43 @@ public class DTOUtil {
         return AppConfig.FILE_OUT_FOLDER + delimiter + getClassPackage().replace(".", "/") + "/";
     }
 
+    public static String secondParse(List<TableColumnDTO> columns, String tableName) {
+        String mappingFilePath = getFieldMappingPath() + tableName + ".txt";
+        File mappingFile = new File(mappingFilePath);
+        if (mappingFile.exists()) {
+            String entityName = null;
+            List<String[]> tmpList = new ArrayList<>();
+            List<String> lines = CommonUtil.readFileToLines(mappingFilePath);
+            for (String line : lines) {
+                if (CommonUtil.regexMatch(line, "^\\/\\*\\*\\s+.*")) {
+                    continue;
+                }
+                if (CommonUtil.regexMatch(line, "^\\/\\/.*")) {
+                    entityName = line.substring(2).trim();
+                    continue;
+                }
+                String[] s = line.split("\\s+");
+                tmpList.add(s);
+            }
+
+            for (int i = 0; i < columns.size(); i++) {
+                columns.get(i).setJavaType(tmpList.get(i)[0]);
+                columns.get(i).setJavaName(tmpList.get(i)[1]);
+            }
+            if (entityName == null) {
+                return getEntityName(tableName);
+            } else {
+                return entityName;
+            }
+        } else {
+            for (int i = 0; i < columns.size(); i++) {
+                columns.get(i).setJavaType(getVariableType(columns.get(i).getType()));
+                columns.get(i).setJavaName(CommonUtil.camelCaseName(columns.get(i).getField().trim().toLowerCase(), false));
+            }
+            return getEntityName(tableName);
+        }
+    }
+
     public static Map<String, Object> genDTOClass(String className, List<TableColumnDTO> columns, boolean withInitializer) {
         Map<String, Object> root = new HashMap<>();
         root.put("package", getClassPackage());
@@ -88,19 +126,21 @@ public class DTOUtil {
         root.put("withInitializer", withInitializer);
 
         Set<String> imports = new TreeSet<>();
+        List<String> mappings = new ArrayList<>();
         List<String> fields = new ArrayList<>();
         List<String> methods = new ArrayList<>();
         List<String> inits = new ArrayList<>();
 
         imports.add("java.io.Serializable");
         for (TableColumnDTO column : columns) {
-            String varName = column.getVariableName();
-            String varType = getVariableType(column.getType());
+            String varName = column.getJavaName();
+            String varType = column.getJavaType();
             String importer = getImporter(varType);
             if (importer != null) {
                 imports.add(importer);
             }
-            fields.add("private "+varType+" "+varName);
+            mappings.add(column.toString());
+            fields.add("private " + varType + " " + varName);
             methods.add(genGetter(varName, varType));
             methods.add(genSetter(varName, varType));
             if (withInitializer) {
@@ -109,6 +149,7 @@ public class DTOUtil {
         }
 
         root.put("imports", imports);
+        root.put("mappings", mappings);
         root.put("fields", fields);
         root.put("methods", methods);
         root.put("inits", inits);
@@ -171,12 +212,23 @@ public class DTOUtil {
             return "String";
         else if (columnType.indexOf("decimal") == 0)
             return "BigDecimal";
-        else if (columnType.indexOf("timestamp") == 0)
-            return "Timestamp";
-        else if (columnType.indexOf("date") == 0)
+        else if (columnType.indexOf("timestamp") == 0) {
+            if (AppConfig.DB_TYPE == 0) {
+                return "Timestamp";
+            } else {
+                return "Date";
+            }
+        } else if (columnType.indexOf("date") == 0)
             return "Date";
         else
             return "Unknown";
     }
 
+    public static String getFieldMappingPath() {
+        String delimiter = "/";
+        if (AppConfig.FILE_OUT_FOLDER.lastIndexOf('/') == AppConfig.FILE_OUT_FOLDER.length() - 1)
+            delimiter = "";
+
+        return AppConfig.FILE_OUT_FOLDER + delimiter + "mapping/";
+    }
 }
