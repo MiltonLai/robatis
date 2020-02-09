@@ -7,6 +7,7 @@
 		<result column="type" property="type" />
 		<result column="key" property="key" />
 		<result column="extra" property="extra" />
+		<result column="comments" property="comments" />
 	</resultMap>
 
 	<select id="getMySQLTables" resultType="java.lang.String">
@@ -34,12 +35,18 @@
 				A.DATA_TYPE||'('||A.DATA_LENGTH||')'
 			ELSE
 				A.DATA_TYPE||'('||A.DATA_LENGTH||','||A.DATA_SCALE||')' END AS TYPE,
-			B.CONSTRAINT_TYPE as key, A.nullable as extra
-		FROM USER_TAB_COLUMNS A LEFT JOIN
-			(SELECT E.*, F.CONSTRAINT_TYPE FROM USER_CONS_COLUMNS E 
+			B.CONSTRAINT_TYPE as key,
+			A.nullable as extra,
+			C.comments
+		FROM USER_TAB_COLUMNS A
+			LEFT JOIN (
+				SELECT E.*, F.CONSTRAINT_TYPE FROM USER_CONS_COLUMNS E
 				LEFT JOIN USER_CONSTRAINTS F ON E.CONSTRAINT_NAME = F.CONSTRAINT_NAME 
-				WHERE E.TABLE_NAME = #{tableName} AND (F.CONSTRAINT_TYPE = 'P' OR F.CONSTRAINT_TYPE = 'U')) B
-			ON A.column_name = B.column_name
+				WHERE E.TABLE_NAME = #{tableName} AND (F.CONSTRAINT_TYPE = 'P' OR F.CONSTRAINT_TYPE = 'U')
+			) B ON A.column_name = B.column_name
+			LEFT JOIN (
+				SELECT G.* FROM user_col_comments G WHERE G.table_name = #{tableName}
+			) C ON A.column_name = C.column_name
 		WHERE A.TABLE_NAME = #{tableName}
 		ORDER BY A.COLUMN_ID
 	</select>

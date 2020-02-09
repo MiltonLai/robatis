@@ -51,7 +51,7 @@ public class DTOUtil {
         return sb.toString();
     }
 
-    public static String genInitializer(String varName, String varType, boolean isPrimary) {
+    public static String genInitializer(String varName, String varType, boolean isPrimary, String nullable) {
         StringBuilder sb = new StringBuilder();
         String value;
         if (varType.equals("int")) value = "0";
@@ -61,7 +61,11 @@ public class DTOUtil {
         else if (varType.equals("String")) {
             if (isPrimary && AppConfig.DTO_PRIMARY_UUID == 1)
                 value = "java.util.UUID.randomUUID().toString().replace(\"-\", \"\")";
-            else value = "\"\"";
+            else if (nullable.equals("Y")) {
+                value = "null";
+            } else {
+                value = "\"\"";
+            }
         }
         else if (varType.equals("BigDecimal")) value = "BigDecimal.valueOf(0, 3)";
         else if (varType.equals("char")) value = "' '";
@@ -112,7 +116,7 @@ public class DTOUtil {
             }
         } else {
             for (int i = 0; i < columns.size(); i++) {
-                columns.get(i).setJavaType(getVariableType(columns.get(i).getType()));
+                columns.get(i).setJavaType(getVariableType(columns.get(i).getType(), columns.get(i).getExtra().equals("Y")));
                 columns.get(i).setJavaName(CommonUtil.camelCaseName(columns.get(i).getField().trim().toLowerCase(), false));
             }
             return getEntityName(tableName);
@@ -126,7 +130,7 @@ public class DTOUtil {
         root.put("withInitializer", withInitializer);
 
         Set<String> imports = new TreeSet<>();
-        List<String> mappings = new ArrayList<>();
+        List<String> comments = new ArrayList<>();
         List<String> fields = new ArrayList<>();
         List<String> methods = new ArrayList<>();
         List<String> inits = new ArrayList<>();
@@ -139,17 +143,17 @@ public class DTOUtil {
             if (importer != null) {
                 imports.add(importer);
             }
-            mappings.add(column.toString());
+            comments.add(column.toString());
             fields.add("private " + varType + " " + varName);
             methods.add(genGetter(varName, varType));
             methods.add(genSetter(varName, varType));
             if (withInitializer) {
-                inits.add(genInitializer(varName, varType, column.isPrimary()));
+                inits.add(genInitializer(varName, varType, column.isPrimary(), column.getExtra()));
             }
         }
 
         root.put("imports", imports);
-        root.put("mappings", mappings);
+        root.put("comments", comments);
         root.put("fields", fields);
         root.put("methods", methods);
         root.put("inits", inits);
@@ -160,11 +164,24 @@ public class DTOUtil {
         if (varType.equals("Date")) return "java.util.Date";
         else if (varType.equals("Timestamp")) return "java.sql.Timestamp";
         else if (varType.equals("String")) return "java.lang.String";
+        else if (varType.equals("Long")) return "java.lang.Long";
+        else if (varType.equals("Integer")) return "java.lang.Integer";
         else if (varType.equals("BigDecimal")) return "java.math.BigDecimal";
         else return null;
     }
 
-    private static String getVariableType(String columnType) {
+    private static String getVariableType(String columnType, boolean nullable) {
+        String type = _getVariableType(columnType);
+        if (nullable && type.equals("int")) {
+            return "Integer";
+        }
+        if (nullable && type.equals("long")) {
+            return "Long";
+        }
+        return type;
+    }
+
+    private static String _getVariableType(String columnType) {
         columnType = columnType.trim().toLowerCase().replace("numeric", "decimal");
         if (columnType.indexOf("number") == 0) {
             Pattern p = Pattern.compile("(?i)^number\\((\\d+),(\\d+)\\)$");

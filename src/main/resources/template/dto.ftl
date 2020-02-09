@@ -4,7 +4,8 @@ package ${package};
 </#list></#if>
 
 public class ${className} implements Serializable {
-<#if fields??><#list fields as field>    ${field};
+<#if fields??><#list fields as field>    /** ${comments[field_index]} */
+    ${field};
 </#list></#if>
 
     <#if withInitializer>public ${className} initialize() {

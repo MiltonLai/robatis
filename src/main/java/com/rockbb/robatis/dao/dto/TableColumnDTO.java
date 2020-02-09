@@ -7,11 +7,12 @@ public class TableColumnDTO {
 	private String type = "";
 	private String key = "";
 	private String extra = "";
+	private String comments = "";
 	private String javaType = null;
 	private String javaName = null;
 
 	public String toString() {
-		return field + " " + type + " " + key + " " + extra;
+		return field + " " + type + " " + key + " " + extra + " " + comments;
 	}
 	public String getField() { return field; }
 	public void setField(String field) { this.field = field; }
@@ -21,6 +22,8 @@ public class TableColumnDTO {
 	public void setKey(String key) { this.key = key; }
 	public String getExtra() { return extra; }
 	public void setExtra(String extra) { this.extra = extra; }
+	public String getComments() { return comments; }
+	public void setComments(String comments) { this.comments = comments; }
 	public String getJavaType() { return javaType; }
 	public void setJavaType(String javaType) { this.javaType = javaType; }
 	public String getJavaName() { return javaName; }
