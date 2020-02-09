@@ -91,28 +91,35 @@ public class MapperUtil {
         root.put("resultMapId", entityName.toLowerCase() + "_1");
 
         List<String[]> primaryKeys = getPrimaryKeys(columns, true);
+        List<TableColumnDTO> keyColumns = getKeyColumns(columns);
+        List<TableColumnDTO> normalColumns = getNormalColumns(columns);
         root.put("primaryKeys", primaryKeys);
-        root.put("columns", columns);
+        root.put("key_columns", keyColumns);
+        root.put("nor_columns", normalColumns);
         root.put("namespace", getClassPackage() + "." + entityName + AppConfig.MAPPER_SUFFIX);
         root.put("accurateWheres", getAccurateWheres(columns));
 
         List<String> resultMapList = new ArrayList<>();
         boolean hasVersion = false;
         String versionField = "";
-        for (int i = 0; i < columns.size(); i++) {
-            if (columns.get(i).getField().equalsIgnoreCase("version")) {
+        for (TableColumnDTO keyColumn : keyColumns) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("<id column=\"");
+            sb.append(keyColumn.getField()).append("\"").append(DT);
+            sb.append(CommonUtil.genIndentSpace(keyColumn.getField(), 25));
+            sb.append("property=\"").append(keyColumn.getJavaName()).append("\" />");
+            resultMapList.add(sb.toString());
+        }
+        for (TableColumnDTO normalColumn : normalColumns) {
+            if (normalColumn.getField().equalsIgnoreCase("version")) {
                 hasVersion = true;
-                versionField = columns.get(i).getField();
+                versionField = normalColumn.getField();
             }
             StringBuilder sb = new StringBuilder();
-            if (columns.get(i).isPrimary())
-                sb.append("<id column=\"");
-            else
-                sb.append("<result column=\"");
-            sb.append(columns.get(i).getField()).append("\"");
-            if (columns.get(i).isPrimary()) sb.append(DT);
-            sb.append(CommonUtil.genIndentSpace(columns.get(i).getField(), 25));
-            sb.append("property=\"").append(columns.get(i).getJavaName()).append("\" />");
+            sb.append("<result column=\"");
+            sb.append(normalColumn.getField()).append("\"");
+            sb.append(CommonUtil.genIndentSpace(normalColumn.getField(), 25));
+            sb.append("property=\"").append(normalColumn.getJavaName()).append("\" />");
             resultMapList.add(sb.toString());
         }
         root.put("resultMapList", resultMapList);
@@ -128,11 +135,18 @@ public class MapperUtil {
 
         List<String> inserts = new ArrayList<>();
         boolean skip = false;
-        for (TableColumnDTO column : columns) {
-            if (column.isPrimary() && autoIncrement && !skip) {
+        for (TableColumnDTO column : keyColumns) {
+            if (autoIncrement && !skip) {
                 skip = true;
                 continue;
             }
+            if (AppConfig.DB_TYPE == 0) {
+                inserts.add(getMySQLValueAssigner(column.getJavaName()));
+            } else {
+                inserts.add(getOracleValueAssigner(column.getJavaName(), column.getJdbcType()));
+            }
+        }
+        for (TableColumnDTO column : normalColumns) {
             if (AppConfig.DB_TYPE == 0) {
                 inserts.add(getMySQLValueAssigner(column.getJavaName()));
             } else {
@@ -143,18 +157,17 @@ public class MapperUtil {
 
         // Update
         List<String> updateStrs = new ArrayList<>();
-        for (int i = 0; i < columns.size(); i++) {
-            if (columns.get(i).isPrimary()) continue;
-            StringBuilder sb = new StringBuilder().append(columns.get(i).getField());
-            sb.append(CommonUtil.genIndentSpace(columns.get(i).getField(), 20));
+        for (TableColumnDTO column : normalColumns) {
+            StringBuilder sb = new StringBuilder().append(column.getField());
+            sb.append(CommonUtil.genIndentSpace(column.getField(), 20));
             sb.append("= ");
-            if (columns.get(i).getJavaName().equalsIgnoreCase("version")) {
+            if (column.getJavaName().equalsIgnoreCase("version")) {
                 sb.append("version + 1");
             } else {
                 if (AppConfig.DB_TYPE == 0) {
-                    sb.append(getMySQLValueAssigner(columns.get(i).getJavaName()));
+                    sb.append(getMySQLValueAssigner(column.getJavaName()));
                 } else {
-                    sb.append(getOracleValueAssigner(columns.get(i).getJavaName(), columns.get(i).getJdbcType()));
+                    sb.append(getOracleValueAssigner(column.getJavaName(), column.getJdbcType()));
                 }
             }
             updateStrs.add(sb.toString());
@@ -163,23 +176,22 @@ public class MapperUtil {
 
         // Alter
         List<String> alters = new ArrayList<>();
-        for (int i = 0; i < columns.size(); i++) {
-            if (columns.get(i).isPrimary()) continue;
+        for (TableColumnDTO column : normalColumns) {
             StringBuilder sb = new StringBuilder();
-            if (columns.get(i).getJavaName().equalsIgnoreCase("version")) {
-                sb.append(columns.get(i).getField());
-                sb.append(CommonUtil.genIndentSpace(columns.get(i).getField(), 20));
+            if (column.getJavaName().equalsIgnoreCase("version")) {
+                sb.append(column.getField());
+                sb.append(CommonUtil.genIndentSpace(column.getField(), 20));
                 sb.append("= ");
-                sb.append(columns.get(i).getField() + " + 1,");
+                sb.append(column.getField() + " + 1,");
             } else {
-                sb.append("<if test=\"param." + columns.get(i).getJavaName() + " != null\">").append(columns.get(i).getField());
-                sb.append(CommonUtil.genIndentSpace(columns.get(i).getJavaName(), 15))
-                        .append(CommonUtil.genIndentSpace(columns.get(i).getField(),15));
+                sb.append("<if test=\"param." + column.getJavaName() + " != null\">").append(column.getField());
+                sb.append(CommonUtil.genIndentSpace(column.getJavaName(), 15))
+                        .append(CommonUtil.genIndentSpace(column.getField(),15));
                 sb.append("= ");
                 if (AppConfig.DB_TYPE == 0) {
-                    sb.append(getMySQLValueAssigner("param." + columns.get(i).getJavaName()));
+                    sb.append(getMySQLValueAssigner("param." + column.getJavaName()));
                 } else {
-                    sb.append(getOracleValueAssigner("param." + columns.get(i).getJavaName(), columns.get(i).getJdbcType()));
+                    sb.append(getOracleValueAssigner("param." + column.getJavaName(), column.getJdbcType()));
                 }
                 sb.append(",</if>");
             }
@@ -241,6 +253,26 @@ public class MapperUtil {
             }
         }
         return primaryKeys;
+    }
+
+    public static List<TableColumnDTO> getKeyColumns(List<TableColumnDTO> columns) {
+        List<TableColumnDTO> keyColumns = new ArrayList<>();
+        for (TableColumnDTO column : columns) {
+            if (column.isPrimary()) {
+                keyColumns.add(column);
+            }
+        }
+        return keyColumns;
+    }
+
+    public static List<TableColumnDTO> getNormalColumns(List<TableColumnDTO> columns) {
+        List<TableColumnDTO> normalColumns = new ArrayList<>();
+        for (TableColumnDTO column : columns) {
+            if (!column.isPrimary()) {
+                normalColumns.add(column);
+            }
+        }
+        return normalColumns;
     }
 
     private static List<String> getAccurateWheres(List<TableColumnDTO> columns) {

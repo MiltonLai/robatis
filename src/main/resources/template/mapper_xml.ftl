@@ -9,7 +9,7 @@
     </resultMap>
     <sql id="key"><#if primaryKeys??><#list primaryKeys as primaryKey>${primaryKey[0]}<#if primaryKey_has_next>, </#if></#list></#if></sql>
     <sql id="columns">
-        <#if columns??><#list columns as column><#if !column.primary>${column.field}<#if column_has_next>, </#if></#if></#list></#if>
+        <#if nor_columns??><#list nor_columns as column>${column.field}<#if column_has_next>, </#if></#list></#if>
     </sql>
     <sql id="table">${tableName}</sql>
 
