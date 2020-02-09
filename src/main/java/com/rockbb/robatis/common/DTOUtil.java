@@ -108,6 +108,9 @@ public class DTOUtil {
             for (int i = 0; i < columns.size(); i++) {
                 columns.get(i).setJavaType(tmpList.get(i)[0]);
                 columns.get(i).setJavaName(tmpList.get(i)[1]);
+
+                String comments = columns.get(i).getComments().replaceAll("\\n+", " ");
+                columns.get(i).setComments(comments);
             }
             if (entityName == null) {
                 return getEntityName(tableName);
@@ -116,6 +119,8 @@ public class DTOUtil {
             }
         } else {
             for (int i = 0; i < columns.size(); i++) {
+                String comments = columns.get(i).getComments().replaceAll("\\n+", " ");
+                columns.get(i).setComments(comments);
                 columns.get(i).setJavaType(getVariableType(columns.get(i).getType(), columns.get(i).getExtra().equals("Y")));
                 columns.get(i).setJavaName(CommonUtil.camelCaseName(columns.get(i).getField().trim().toLowerCase(), false));
             }
