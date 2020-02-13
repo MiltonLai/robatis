@@ -43,10 +43,14 @@ public class MapperUtil {
         imports.add("org.springframework.stereotype.Repository");
         imports.add("com.rockbb.commons.lib.web.Pager");
         for (String[] key : primaryKeys) {
-            if (key[2].contains("java") && !key[2].equals("java.lang.String")) {
+            if (key[2].equals("String")) {
+                imports.add("java.lang.String");
+            } else if (key[2].contains("java") && !key[2].equals("java.lang.String")) {
                 imports.add(key[2]);
             } else if (key[4].equals("Long")) {
                 imports.add("java.lang.Long");
+            } else if (key[4].equals("Integer")) {
+                imports.add("java.lang.Integer");
             }
         }
         root.put("imports", imports);
@@ -232,22 +236,27 @@ public class MapperUtil {
                 String[] key = new String[5];
                 key[0] = columns.get(i).getField();
                 key[1] = columns.get(i).getJavaName();
+                key[2] = columns.get(i).getJavaType();
                 key[3] = columns.get(i).getExtra();
-                if (columns.get(i).getType().contains("CHAR")
-                        || columns.get(i).getType().contains("char")) {
-                    if (forXml)
+                if (forXml) {
+                    if (columns.get(i).getJavaType().equals("String")) {
                         key[2] = "java.lang.String";
-                    else
-                        key[2] = "String";
-                } else
-                    key[2] = "long";
-
-                key[4] = key[2];
-                if (key[2].equals("long")) {
-                    if (forXml)
+                        key[4] = "java.lang.String";
+                    } else if (columns.get(i).getJavaType().equalsIgnoreCase("long")) {
                         key[4] = "java.lang.Long";
-                    else
+                    } else if (columns.get(i).getJavaType().equals("int")) {
+                        key[4] = "java.lang.Integer";
+                    } else if (columns.get(i).getJavaType().equals("Integer")) {
+                        key[2] = "java.lang.Integer";
+                        key[4] = "java.lang.Integer";
+                    }
+                } else {
+                    key[4] = key[2];
+                    if (columns.get(i).getJavaType().equalsIgnoreCase("long")) {
                         key[4] = "Long";
+                    } else if (columns.get(i).getJavaType().equals("int")) {
+                        key[4] = "Integer";
+                    }
                 }
                 primaryKeys.add(key);
             }

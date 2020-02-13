@@ -5,9 +5,11 @@ import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -35,8 +37,8 @@ public class FreemarkerHelper {
             if (!destFolder.isDirectory()) {
                 destFolder.mkdirs();
             }
-            FileWriter fw = new FileWriter(destPath + fileName);
-            render(fw, template, data);
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destPath + fileName, true), "UTF-8"));
+            render(writer, template, data);
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "IOException:", e);
         }
