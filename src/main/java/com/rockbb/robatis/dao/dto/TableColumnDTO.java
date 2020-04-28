@@ -40,6 +40,7 @@ public class TableColumnDTO {
 		else if (type.indexOf("NCHAR") == 0) return "NVARCHAR";
 		else if (type.indexOf("VARCHAR2") == 0) return "VARCHAR";
 		else if (type.indexOf("DATE") == 0) return "TIMESTAMP";
+		else if (type.indexOf("TIMESTAMP") == 0) return "TIMESTAMP";
 		else if (type.indexOf("NUMBER") == 0) return "NUMERIC";
 		else if (type.indexOf("BLOB") == 0) return "VARCHAR";
 		else if (type.indexOf("CLOB") == 0) return "VARCHAR";

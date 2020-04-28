@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://ibatis.apache.org/builder/xml/mybatis-3-mapper.dtd">
+<!DOCTYPE mapper PUBLIC "-//ibatis.apache.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
 <mapper namespace="${namespace}">
     <cache eviction="LRU" flushInterval="300000" size="128" readOnly="false" />
@@ -24,7 +24,7 @@
     <update id="update" parameterType="${className}">
         UPDATE <include refid="table" /> SET
 <#list updateStrs as updateStr>            ${updateStr}<#if updateStr_has_next>,${'\n'}</#if></#list>
-        WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if><#if hasVersion> AND version = ${'#'}{"${versionField}"}</#if>
+        WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if><#if hasVersion> AND version = ${'#'}{${versionField}}</#if>
     </update>
 
     <update id="alter">
@@ -32,7 +32,7 @@
         <set>
 <#list alters as alter>            ${alter}<#if alter_has_next>${'\n'}</#if></#list>
         </set>
-        WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if><#if hasVersion> AND version = ${'#'}{"${versionField}"}</#if>
+        WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if><#if hasVersion> AND version = ${'#'}{${versionField}}</#if>
     </update>
 
     <delete id="delete"<#if primaryKeys??><#if primaryKeys?size == 1> parameterType="${primaryKeys[0][2]}"</#if></#if>>

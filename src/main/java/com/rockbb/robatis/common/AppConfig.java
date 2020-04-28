@@ -22,6 +22,8 @@ public class AppConfig {
         return value;
     }
 
+    public static final String TABLES_INCLUDE = getValue("db.tables-include").toUpperCase();
+
     public static final int DTO_PRIMARY_UUID = getIntValue("java.dto.primary.uuid");
     public static final String DTO_PACKAGE = getValue("java.dto.package");
     public static final String MAPPER_PACKAGE = getValue("java.mapper.package");

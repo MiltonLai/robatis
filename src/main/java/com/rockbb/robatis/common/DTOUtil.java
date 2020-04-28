@@ -109,7 +109,7 @@ public class DTOUtil {
                 columns.get(i).setJavaType(tmpList.get(i)[0]);
                 columns.get(i).setJavaName(tmpList.get(i)[1]);
 
-                String comments = columns.get(i).getComments().replaceAll("\\n+", " ");
+                String comments = columns.get(i).getComments().replaceAll("(\\n|\\r)+", " ");
                 columns.get(i).setComments(comments);
             }
             if (entityName == null) {

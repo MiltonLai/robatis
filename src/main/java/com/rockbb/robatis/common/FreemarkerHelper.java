@@ -37,7 +37,7 @@ public class FreemarkerHelper {
             if (!destFolder.isDirectory()) {
                 destFolder.mkdirs();
             }
-            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destPath + fileName, true), "UTF-8"));
+            BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(destPath + fileName, false), "UTF-8"));
             render(writer, template, data);
         } catch (IOException e) {
             LOG.log(Level.SEVERE, "IOException:", e);

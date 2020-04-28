@@ -5,6 +5,8 @@ import com.rockbb.robatis.dao.mapper.TableColumnMapper;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import java.io.File;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,24 +24,39 @@ public class Main {
 
         List<String> tableNames = (AppConfig.DB_TYPE == 0)?
                 tableColumnMapper.getMySQLTables() : tableColumnMapper.getOracleTables();
+        List<String> tablesInclude = null;
+        if (AppConfig.TABLES_INCLUDE != null && AppConfig.TABLES_INCLUDE.length() > 0) {
+            String[] array = AppConfig.TABLES_INCLUDE.split(",");
+            tablesInclude = Arrays.asList(array);
+        }
+        String mappingPath = DTOUtil.getFieldMappingPath();
+        File mappingFolder = new File(mappingPath);
+        if (!mappingFolder.isDirectory()) {
+            mappingFolder.mkdirs();
+        }
 
         for (String tableName : tableNames) {
-            Map<String, Object> params = new HashMap<String, Object>();
+            if (tablesInclude != null) {
+                if (!tablesInclude.contains(tableName.toUpperCase())) {
+                    continue;
+                }
+            }
+
+            Map<String, Object> params = new HashMap<>();
             params.put("tableName", tableName);
             List<TableColumnDTO> columns = (AppConfig.DB_TYPE == 0)?
                     tableColumnMapper.getMySQLSchema(params) : tableColumnMapper.getOracleSchema(params);
             String entityName = DTOUtil.secondParse(columns, tableName);
-            String destPath = DTOUtil.getFieldMappingPath();
             Map<String, Object> data = new HashMap<>();
             data.put("name", entityName);
             data.put("columns", columns);
-            helper.write(destPath, tableName + ".txt", "field_map.ftl", data);
+            helper.write(mappingPath, tableName + ".txt", "field_map.ftl", data);
 
             String dtoName = DTOUtil.getDTOName(entityName);
             System.out.println(dtoName + "(" + tableName + ")");
 
             data = DTOUtil.genDTOClass(dtoName, columns, true);
-            destPath = DTOUtil.getClassFilePath();
+            String destPath = DTOUtil.getClassFilePath();
             helper.write(destPath, dtoName + ".java", "dto.ftl", data);
 
             data = MapperUtil.genMapperInterface(entityName, columns);
