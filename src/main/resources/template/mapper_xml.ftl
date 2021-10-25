@@ -15,7 +15,7 @@
 
     <insert id="insert" parameterType="${className}"<#if autoIncrement> useGeneratedKeys="true" keyProperty="${primaryKeys[0][1]}"</#if>>
         INSERT INTO <include refid="table" />
-        (<include refid="key" />, <include refid="columns" />)
+        (<#if !autoIncrement><include refid="key" />, </#if><include refid="columns" />)
         VALUES (
 <#list inserts as insert>        ${insert}<#if insert_has_next>,
 </#if></#list>)
