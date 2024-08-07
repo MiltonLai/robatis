@@ -14,6 +14,10 @@
 		SHOW TABLES
 	</select>
 
+	<select id="getPGTables" resultType="java.lang.String">
+		SELECT tablename FROM pg_catalog.pg_tables where schemaname = 'public'
+	</select>
+
 	<select id="getOracleTables" resultType="java.lang.String">
 		SELECT A.TABLE_NAME
 		FROM user_tables A
@@ -22,6 +26,36 @@
 
 	<select id="getMySQLSchema" parameterType="java.util.Map" resultMap="dto_1">    
 		DESCRIBE ${tableName}
+	</select>
+
+	<select id="getPGSchema" parameterType="java.util.Map" resultMap="dto_1">
+		SELECT
+			cc.column_name as field,
+			cc.data_type,
+			cc.udt_name,
+			case
+				when cc.udt_name = 'varchar' then 'varchar('||character_maximum_length||')'
+				when cc.udt_name = 'text' then 'varchar(1024)'
+				when cc.udt_name = 'int8' then 'bigint(11)'
+				when cc.udt_name = 'int4' then 'int(11)'
+				when cc.udt_name = 'int2' then 'tinyint(2)'
+				when cc.udt_name = 'numeric' then 'decimal(10)'
+				when cc.udt_name = 'float4' then 'decimal(10)'
+				when cc.udt_name = 'float8' then 'decimal(10)'
+				when cc.udt_name = 'jsonb' then 'varchar(255)'
+				when cc.udt_name = 'timestamp' then 'datetime'
+			end as type,
+			cc.character_maximum_length,
+			(
+				SELECT 'PRI'
+				FROM information_schema.table_constraints tc
+				JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name)
+				JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
+				WHERE tc.table_name = #{tableName}
+				and c.column_name = cc.column_name
+			) as Key
+		FROM information_schema.columns cc
+		WHERE cc.table_name = #{tableName} order by cc.ordinal_position ASC;
 	</select>
 
 	<select id="getOracleSchema" parameterType="java.util.Map" resultMap="dto_1">    

@@ -11,6 +11,8 @@ public interface TableColumnMapper
 {
 	List<String> getMySQLTables();
 	List<String> getOracleTables();
+	List<String> getPGTables();
 	List<TableColumnDTO> getMySQLSchema(Map<String, Object> params);
 	List<TableColumnDTO> getOracleSchema(Map<String, Object> params);
+	List<TableColumnDTO> getPGSchema(Map<String, Object> params);
 }

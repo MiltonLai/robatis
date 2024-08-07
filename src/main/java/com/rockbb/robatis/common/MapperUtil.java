@@ -30,6 +30,7 @@ public class MapperUtil {
         List<String[]> primaryKeys = getPrimaryKeys(columns, false);
 
         Map<String, Object> root = new HashMap<>();
+        root.put("dbType", AppConfig.DB_TYPE);
         root.put("package", getClassPackage());
         root.put("className", entityName + AppConfig.MAPPER_SUFFIX);
         root.put("beanName", DTOUtil.getBeanName(entityName) + AppConfig.MAPPER_SUFFIX);
@@ -73,7 +74,7 @@ public class MapperUtil {
 
         List<String> inserts = new ArrayList<>();
         for (TableColumnDTO column : columns) {
-            if (AppConfig.DB_TYPE == 0) {
+            if (AppConfig.DB_TYPE == 0 || AppConfig.DB_TYPE == 2 || AppConfig.DB_TYPE == 3) {
                 inserts.add(getMySQLValueAssigner(column.getJavaName()));
             } else {
                 inserts.add(getOracleValueAssigner(column.getJavaName(), column.getJdbcType()));
@@ -84,13 +85,18 @@ public class MapperUtil {
         List<TableColumnDTO> normalColumns = getNormalColumns(columns);
         List<String> updateStrs = new ArrayList<>();
         for (TableColumnDTO column : normalColumns) {
-            StringBuilder sb = new StringBuilder().append('`').append(column.getField()).append('`');
+            StringBuilder sb = new StringBuilder();
+            if (AppConfig.DB_TYPE == 0 || AppConfig.DB_TYPE == 2) {
+                sb.append('`').append(column.getField()).append('`');
+            } else {
+                sb.append('"').append(column.getField()).append('"');
+            }
             sb.append(CommonUtil.genIndentSpace(column.getField(), 30));
             sb.append("= ");
             if (column.getJavaName().equalsIgnoreCase("version")) {
                 sb.append("version + 1");
             } else {
-                if (AppConfig.DB_TYPE == 0) {
+                if (AppConfig.DB_TYPE == 0 || AppConfig.DB_TYPE == 2 || AppConfig.DB_TYPE == 3) {
                     sb.append(getMySQLValueAssigner(column.getJavaName()));
                 } else {
                     sb.append(getOracleValueAssigner(column.getJavaName(), column.getJdbcType()));
@@ -195,14 +201,14 @@ public class MapperUtil {
                 skip = true;
                 continue;
             }
-            if (AppConfig.DB_TYPE == 0) {
+            if (AppConfig.DB_TYPE == 0 || AppConfig.DB_TYPE == 2 || AppConfig.DB_TYPE == 3) {
                 inserts.add(getMySQLValueAssigner(column.getJavaName()));
             } else {
                 inserts.add(getOracleValueAssigner(column.getJavaName(), column.getJdbcType()));
             }
         }
         for (TableColumnDTO column : normalColumns) {
-            if (AppConfig.DB_TYPE == 0) {
+            if (AppConfig.DB_TYPE == 0 || AppConfig.DB_TYPE == 2 || AppConfig.DB_TYPE == 3) {
                 inserts.add(getMySQLValueAssigner(column.getJavaName()));
             } else {
                 inserts.add(getOracleValueAssigner(column.getJavaName(), column.getJdbcType()));
@@ -219,7 +225,7 @@ public class MapperUtil {
             if (column.getJavaName().equalsIgnoreCase("version")) {
                 sb.append("version + 1");
             } else {
-                if (AppConfig.DB_TYPE == 0) {
+                if (AppConfig.DB_TYPE == 0 || AppConfig.DB_TYPE == 2 || AppConfig.DB_TYPE == 3) {
                     sb.append(getMySQLValueAssigner(column.getJavaName()));
                 } else {
                     sb.append(getOracleValueAssigner(column.getJavaName(), column.getJdbcType()));
@@ -243,7 +249,7 @@ public class MapperUtil {
                 sb.append(CommonUtil.genIndentSpace(column.getJavaName(), 15))
                         .append(CommonUtil.genIndentSpace(column.getField(),15));
                 sb.append("= ");
-                if (AppConfig.DB_TYPE == 0) {
+                if (AppConfig.DB_TYPE == 0 || AppConfig.DB_TYPE == 2 || AppConfig.DB_TYPE == 3) {
                     sb.append(getMySQLValueAssigner("param." + column.getJavaName()));
                 } else {
                     sb.append(getOracleValueAssigner("param." + column.getJavaName(), column.getJdbcType()));

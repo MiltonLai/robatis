@@ -5,21 +5,40 @@ package ${package};
 
 @Mapper
 public interface ${className} {
+<#if dbType == 0 || dbType == 2>
     @Insert("""
         INSERT INTO `${tableName}` (
 <#if insertFields??><#list insertFields as item>            `${item}`<#if item_has_next>,</#if>
 </#list></#if>
+<#elseif dbType == 3>
+    @Insert("""
+        INSERT INTO "${tableName}" (
+<#if insertFields??><#list insertFields as item>            "${item}"<#if item_has_next>,</#if>
+</#list></#if>
+</#if>
         ) VALUES (
 <#list inserts as insert>            ${insert}<#if insert_has_next>,</#if>
 </#list>        )
     """)
     int insert(${dtoName} dto);
 
-    @Delete("DELETE FROM `${tableName}` WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>")
+<#if dbType == 0 || dbType == 2>
+    @Delete("""
+        DELETE FROM `${tableName}` WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>
+    """)
+<#elseif dbType == 3>
+    @Delete("""
+        DELETE FROM "${tableName}" WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>
+    """)
+</#if>
     int delete(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar}<#if primaryVar_has_next>, </#if></#list></#if>);
 
     @Update("""
+<#if dbType == 0 || dbType == 2>
         UPDATE `${tableName}` SET
+<#elseif dbType == 3>
+        UPDATE "${tableName}" SET
+</#if>
 <#list updateStrs as updateStr>            ${updateStr}<#if updateStr_has_next>,</#if>
 </#list>
         WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>
@@ -38,7 +57,11 @@ public interface ${className} {
     @ResultMap("${resultMapId}")
     @Select("""
     <script>
+<#if dbType == 0 || dbType == 2>
         SELECT * FROM `${tableName}`
+<#elseif dbType == 3>
+        SELECT * FROM "${tableName}"
+</#if>
         <where>
         </where>
         <if test='pager != null'>
@@ -46,7 +69,11 @@ public interface ${className} {
                 ORDER BY
                 <foreach collection="pager.sorts" item="item" separator=",">${r"${item.field} ${item.order}"}</foreach>
             </if>
+<#if dbType == 0 || dbType == 2>
             LIMIT ${r"#{pager.offset}, #{pager.limit}"}
+<#elseif dbType == 3>
+            LIMIT ${r"#{pager.limit} OFFSET #{pager.offset}"}
+</#if>
         </if>
     </script>
     """)
@@ -55,7 +82,11 @@ public interface ${className} {
 
     @Select("""
     <script>
+<#if dbType == 0 || dbType == 2>
         SELECT COUNT(1) FROM `${tableName}`
+<#elseif dbType == 3>
+        SELECT COUNT(1) FROM "${tableName}"
+</#if>
         <where>
         </where>
     </script>

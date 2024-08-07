@@ -22,8 +22,14 @@ public class Main {
 
         FreemarkerHelper helper = new FreemarkerHelper("/template", "UTF-8");
 
-        List<String> tableNames = (AppConfig.DB_TYPE == 0)?
-                tableColumnMapper.getMySQLTables() : tableColumnMapper.getOracleTables();
+        List<String> tableNames = null;
+        if (AppConfig.DB_TYPE == 0 || AppConfig.DB_TYPE == 2) {
+            tableNames = tableColumnMapper.getMySQLTables();
+        } else if (AppConfig.DB_TYPE == 1) {
+            tableNames = tableColumnMapper.getOracleTables();
+        } else if (AppConfig.DB_TYPE == 3) {
+            tableNames = tableColumnMapper.getPGTables();
+        }
         List<String> tablesInclude = null;
         if (AppConfig.TABLES_INCLUDE != null && AppConfig.TABLES_INCLUDE.length() > 0) {
             String[] array = AppConfig.TABLES_INCLUDE.split(",");
@@ -44,8 +50,15 @@ public class Main {
 
             Map<String, Object> params = new HashMap<>();
             params.put("tableName", tableName);
-            List<TableColumnDTO> columns = (AppConfig.DB_TYPE == 0)?
-                    tableColumnMapper.getMySQLSchema(params) : tableColumnMapper.getOracleSchema(params);
+            List<TableColumnDTO> columns = null;
+            if (AppConfig.DB_TYPE == 0 || AppConfig.DB_TYPE == 2) {
+                columns = tableColumnMapper.getMySQLSchema(params);
+            } else if (AppConfig.DB_TYPE == 1) {
+                columns = tableColumnMapper.getOracleSchema(params);
+            } else if (AppConfig.DB_TYPE == 3) {
+                columns = tableColumnMapper.getPGSchema(params);
+            }
+
             String entityName = DTOUtil.secondParse(columns, tableName);
             Map<String, Object> data = new HashMap<>();
             data.put("name", entityName);

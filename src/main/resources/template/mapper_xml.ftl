@@ -50,22 +50,7 @@
 
     </sql>
 
-<#if dbType == 0>
-    <select id="list" resultMap="${resultMapId}">
-        SELECT
-            <include refid="key" />, <include refid="columns" />
-        FROM
-            <include refid="table" />
-        <where>
-            <include refid="params" />
-        </where>
-        ORDER BY
-            ${'$'}{pager.sort} ${'$'}{pager.order}
-        LIMIT
-            ${'#'}{pager.offset}, ${'#'}{pager.limit}
-    </select>
-
-<#else>
+<#if dbType == 1>
     <select id="list" resultMap="${resultMapId}">
         SELECT <include refid="key" />, <include refid="columns" /> FROM
         (
@@ -84,11 +69,10 @@
         WHERE RN &gt;= ${'#'}{pager.offset}
     </select>
 
-</#if>
-<#if primaryKeys??><#if primaryKeys?size == 1><#assign primaryKey = primaryKeys[0]><#if dbType == 0>
-    <select id="listIds" resultType="${primaryKey[4]}">
+<#else>
+    <select id="list" resultMap="${resultMapId}">
         SELECT
-            <include refid="key" />
+            <include refid="key" />, <include refid="columns" />
         FROM
             <include refid="table" />
         <where>
@@ -100,7 +84,8 @@
             ${'#'}{pager.offset}, ${'#'}{pager.limit}
     </select>
 
-<#else>
+</#if>
+<#if primaryKeys??><#if primaryKeys?size == 1><#assign primaryKey = primaryKeys[0]><#if dbType == 1>
     <select id="listIds" resultType="${primaryKey[4]}">
         SELECT <include refid="key" /> FROM
         (
@@ -117,6 +102,21 @@
             WHERE ROWNUM &lt; ${'#'}{pager.limit}
         )
         WHERE RN &gt;= ${'#'}{pager.offset}
+    </select>
+
+<#else>
+    <select id="listIds" resultType="${primaryKey[4]}">
+        SELECT
+            <include refid="key" />
+        FROM
+            <include refid="table" />
+        <where>
+            <include refid="params" />
+        </where>
+        ORDER BY
+            ${'$'}{pager.sort} ${'$'}{pager.order}
+        LIMIT
+            ${'#'}{pager.offset}, ${'#'}{pager.limit}
     </select>
 
 </#if></#if></#if>
