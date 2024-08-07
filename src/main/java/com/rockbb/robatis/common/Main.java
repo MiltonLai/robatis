@@ -59,7 +59,7 @@ public class Main {
             String destPath = DTOUtil.getClassFilePath();
             helper.write(destPath, dtoName + ".java", "dto.ftl", data);
 
-            data = MapperUtil.genMapperInterface(entityName, columns);
+            data = MapperUtil.genMapperInterface(tableName, entityName, columns);
             destPath = MapperUtil.getClassFilePath();
             helper.write(destPath, entityName + AppConfig.MAPPER_SUFFIX + ".java", "mapper.ftl", data);
 

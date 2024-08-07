@@ -3,30 +3,63 @@ package ${package};
 <#if imports??><#list imports as import>import ${import};
 </#list></#if>
 
-@Repository("${beanName}")
+@Mapper
 public interface ${className} {
-    String[] ORDERBY = {<#if orderbys??><#list orderbys as orderby>"${orderby}"<#if orderby_has_next>, </#if></#list></#if>};
-
+    @Insert("""
+        INSERT INTO `${tableName}` (
+<#if insertFields??><#list insertFields as item>            `${item}`<#if item_has_next>,</#if>
+</#list></#if>
+        ) VALUES (
+<#list inserts as insert>            ${insert}<#if insert_has_next>,</#if>
+</#list>        )
+    """)
     int insert(${dtoName} dto);
 
+    @Delete("DELETE FROM `${tableName}` WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>")
     int delete(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar}<#if primaryVar_has_next>, </#if></#list></#if>);
 
+    @Update("""
+        UPDATE `${tableName}` SET
+<#list updateStrs as updateStr>            ${updateStr}<#if updateStr_has_next>,</#if>
+</#list>
+        WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>
+    """)
     int update(${dtoName} dto);
 
-    int alter(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar}, </#list></#if>@Param("param") Map<String, Object> args);
-
+    @Results(id="${resultMapId}", value={
+<#if resultMapList??><#list resultMapList as resultMap>        ${resultMap},
+    </#list></#if>
+    })
+    @Select("""
+        SELECT * FROM `${tableName}` WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>
+    """)
     ${dtoName} select(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar}<#if primaryVar_has_next>, </#if></#list></#if>);
 
+    @ResultMap("${resultMapId}")
+    @Select("""
+    <script>
+        SELECT * FROM `${tableName}`
+        <where>
+        </where>
+        <if test='pager != null'>
+            <if test='pager.sorts.size &gt; 0'>
+                ORDER BY
+                <foreach collection="pager.sorts" item="item" separator=",">${r"${item.field} ${item.order}"}</foreach>
+            </if>
+            LIMIT ${r"#{pager.offset}, #{pager.limit}"}
+        </if>
+    </script>
+    """)
     List<${dtoName}> list(
-        @Param("pager") Pager pager,
-        @Param("param") Map<String, Object> args);
-<#if primaryKeys??><#if primaryKeys?size == 1><#assign primaryKey = primaryKeys[0]>
+        @Param("pager") Pager pager);
 
-    List<${primaryKey[4]}> listIds(
-        @Param("pager") Pager pager,
-        @Param("param") Map<String, Object> args);
-</#if></#if>
-
-    long count(@Param("param") Map<String, Object> args);
+    @Select("""
+    <script>
+        SELECT COUNT(1) FROM `${tableName}`
+        <where>
+        </where>
+    </script>
+    """)
+    long count();
 
 }

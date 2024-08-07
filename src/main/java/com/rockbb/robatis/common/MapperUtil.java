@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.stream.Collectors;
 
 /**
  * 
@@ -23,7 +24,8 @@ public class MapperUtil {
      * @param columns 数据表字段
      * @return xml format text
      */
-    public static Map<String, Object> genMapperInterface(String entityName, List<TableColumnDTO> columns) {
+    public static Map<String, Object> genMapperInterface(
+            String tableName, String entityName, List<TableColumnDTO> columns) {
         String dtoName = DTOUtil.getDTOName(entityName);
         List<String[]> primaryKeys = getPrimaryKeys(columns, false);
 
@@ -34,14 +36,22 @@ public class MapperUtil {
         root.put("entityName", entityName);
         root.put("dtoName", dtoName);
         root.put("primaryKeys", primaryKeys);
+        root.put("tableName", tableName);
+        root.put("resultMapId", entityName.toLowerCase() + "_1");
 
         Set<String> imports = new TreeSet<>();
         imports.add("java.util.List");
         imports.add("java.util.Map");
         imports.add(DTOUtil.getClassPackage() + "." + entityName + AppConfig.DTO_SUFFIX);
+        imports.add("org.apache.ibatis.annotations.Delete");
+        imports.add("org.apache.ibatis.annotations.Insert");
+        imports.add("org.apache.ibatis.annotations.Mapper");
         imports.add("org.apache.ibatis.annotations.Param");
-        imports.add("org.springframework.stereotype.Repository");
-        imports.add("com.rockbb.commons.lib.web.Pager");
+        imports.add("org.apache.ibatis.annotations.Result");
+        imports.add("org.apache.ibatis.annotations.ResultMap");
+        imports.add("org.apache.ibatis.annotations.Results");
+        imports.add("org.apache.ibatis.annotations.Select");
+        imports.add("org.apache.ibatis.annotations.Update");
         for (String[] key : primaryKeys) {
             if (key[2].equals("String")) {
                 imports.add("java.lang.String");
@@ -54,13 +64,41 @@ public class MapperUtil {
             }
         }
         root.put("imports", imports);
-
-        List<String> orderbys = new ArrayList<>();
+        // Insert
+        List<String> insertFields = new ArrayList<>();
         for (int i=0; i < columns.size(); i++) {
-            if (columns.get(i).isPrimary()) continue;
-            orderbys.add(columns.get(i).getField());
+            insertFields.add(columns.get(i).getField());
         }
-        root.put("orderbys", orderbys);
+        root.put("insertFields", insertFields);
+
+        List<String> inserts = new ArrayList<>();
+        for (TableColumnDTO column : columns) {
+            if (AppConfig.DB_TYPE == 0) {
+                inserts.add(getMySQLValueAssigner(column.getJavaName()));
+            } else {
+                inserts.add(getOracleValueAssigner(column.getJavaName(), column.getJdbcType()));
+            }
+        }
+        root.put("inserts", inserts);
+        // Update
+        List<TableColumnDTO> normalColumns = getNormalColumns(columns);
+        List<String> updateStrs = new ArrayList<>();
+        for (TableColumnDTO column : normalColumns) {
+            StringBuilder sb = new StringBuilder().append('`').append(column.getField()).append('`');
+            sb.append(CommonUtil.genIndentSpace(column.getField(), 30));
+            sb.append("= ");
+            if (column.getJavaName().equalsIgnoreCase("version")) {
+                sb.append("version + 1");
+            } else {
+                if (AppConfig.DB_TYPE == 0) {
+                    sb.append(getMySQLValueAssigner(column.getJavaName()));
+                } else {
+                    sb.append(getOracleValueAssigner(column.getJavaName(), column.getJdbcType()));
+                }
+            }
+            updateStrs.add(sb.toString());
+        }
+        root.put("updateStrs", updateStrs);
 
         List<String> primaryVars = new ArrayList<>();
         if (primaryKeys.size() == 0) {
@@ -74,6 +112,19 @@ public class MapperUtil {
             }
         }
         root.put("primaryVars", primaryVars);
+        root.put("accurateWheres", getAccurateWheres(columns));
+        List<String> resultMapList = columns.stream().map(column->{
+            StringBuilder sb = new StringBuilder();
+            sb.append("@Result(column=\"");
+            sb.append(column.getField()).append("\",");
+            sb.append(CommonUtil.genIndentSpace(column.getField(), 30));
+            sb.append("property=\"").append(column.getJavaName()).append("\")");
+            return sb.toString();
+        }).collect(Collectors.toList());
+        root.put("resultMapList", resultMapList);
+
+
+
         return root;
     }
 
