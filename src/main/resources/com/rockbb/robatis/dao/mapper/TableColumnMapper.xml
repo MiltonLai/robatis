@@ -35,6 +35,7 @@
 			cc.udt_name,
 			case
 				when cc.udt_name = 'varchar' then 'varchar('||character_maximum_length||')'
+				when cc.udt_name = 'bpchar' then 'char('||character_maximum_length||')'
 				when cc.udt_name = 'text' then 'varchar(1024)'
 				when cc.udt_name = 'int8' then 'bigint(11)'
 				when cc.udt_name = 'int4' then 'int(11)'
