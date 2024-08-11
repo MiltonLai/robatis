@@ -47,12 +47,15 @@
 			end as type,
 			cc.character_maximum_length,
 			(
-				SELECT 'PRI'
+				SELECT
+					case when constraint_type = 'PRIMARY KEY' then 'PRI'
+					when constraint_type = 'UNIQUE' then 'UNI'
+					else ''
+					end
 				FROM information_schema.table_constraints tc
-				JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name)
-				JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
-				WHERE tc.table_name = #{tableName}
-				and c.column_name = cc.column_name
+					JOIN information_schema.constraint_column_usage AS ccu USING (constraint_schema, constraint_name)
+					JOIN information_schema.columns AS c ON c.table_schema = tc.constraint_schema AND tc.table_name = c.table_name AND ccu.column_name = c.column_name
+				WHERE tc.table_name = #{tableName} and c.column_name = cc.column_name
 			) as Key
 		FROM information_schema.columns cc
 		WHERE cc.table_name = #{tableName} order by cc.ordinal_position ASC;

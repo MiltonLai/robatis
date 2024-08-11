@@ -50,7 +50,11 @@ public interface ${className} {
     </#list></#if>
     })
     @Select("""
+<#if dbType == 0 || dbType == 2>
         SELECT * FROM `${tableName}` WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>
+<#elseif dbType == 3>
+        SELECT * FROM "${tableName}" WHERE <#if accurateWheres??><#list accurateWheres as accurateWhere>${accurateWhere}<#if accurateWhere_has_next> AND </#if></#list></#if>
+</#if>
     """)
     ${dtoName} select(<#if primaryVars??><#list primaryVars as primaryVar>${primaryVar}<#if primaryVar_has_next>, </#if></#list></#if>);
 
